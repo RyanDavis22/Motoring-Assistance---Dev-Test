@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<title>NASA Images Demo</title>
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+		<link rel="stylesheet" href="/includes/css/style.css"/>
+		<script src="/includes/js/vue.js"></script>	
+		<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+		<script>
+			window.onload = function() {
+				var a = document.getElementById("searchButton");
+				
+				a.onclick = function() {
+					var q = document.getElementById("searchBox").value;
+					//search for query in nasa api and put results into a vue list.
+					app.searchNasa(q);
+					return false;
+				}
+			}
+		</script>
+	</head>
+	<body class="background">
+		<div class="row title">
+			<div class="col-full">
+				<h1>NASA Image search</h1>
+			</div>
+		</div>
+		<div class="row">
+			<div class="col-full">
+				<input type="textbox" name="searchBox" id="searchBox" placeholder="Type query here...">
+				<a href="#" class="button-link link" id="searchButton"><span class="button-label">Search</span></a>
+			</div>
+		</div>
+		<div class="row">
+			<div class="col-full">
+				<div class="row search-results"  id="row-1">
+					<img-item
+					  v-for="item in imageList"
+					  v-bind:src="item"
+					  v-bind:key="item.id"
+					></img-item>
+				</div>
+			</div> 
+		</div>
+	</body>
+	
+	<script>
+		Vue.component('img-item', {
+			props: ['src'],
+			template: '<div class="col-3 img-container"><img :src="src.text"></img></div>'
+		})
+
+		var app = new Vue({
+			el: '#row-1',
+			data: {
+				imageList: []
+			},
+			methods: {
+				searchNasa: function(query) {
+					var self = this;
+					self.imageList = [];
+					query = encodeURI(query);
+					axios
+						.get('https://images-api.nasa.gov/search?media_type=image&q=' + query)
+						.then(function(response) {
+							if(response.status == "200"){
+								var items = response.data.collection.items.slice(0,9);
+								for(var i = 0; i < 9; i++){
+									self.imageList.push({id: i, text: items[i].links[0].href});
+								}
+							}
+						});
+				}
+			},
+
+		})
+	</script>
+</html>
